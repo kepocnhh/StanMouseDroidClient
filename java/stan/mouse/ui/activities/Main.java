@@ -37,7 +37,10 @@ public class Main
     DatagramSocket clientSocket;
     InetAddress IPAddress;
     int serverPort = 9876;
-    String serverAddress = "192.168.1.161";
+    String serverAddress =
+//            "192.168.1.161"
+            "10.0.1.16"
+            ;
 
     private float[] rotationMatrix;     //Матрица поворота
     private float[] accelData;           //Данные с акселерометра
@@ -71,8 +74,7 @@ public class Main
                 try
                 {
                     test();
-                }
-                catch (IOException e)
+                } catch(IOException e)
                 {
                     e.printStackTrace();
                 }
@@ -96,7 +98,7 @@ public class Main
                 try
                 {
                     clientSocket.send(sendPacket);
-                    clientSocket.receive(receivePacket);
+//                    clientSocket.receive(receivePacket);
                 }
                 catch (IOException e)
                 {
@@ -104,6 +106,29 @@ public class Main
                 }
                 String modifiedSentence = new String(receivePacket.getData());
                 Log.e("FROM SERVER", modifiedSentence);
+            }
+        }).start();
+    }
+
+    private void sendOrientationData(final long x, final long y, final long z)
+    {
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                String sentence = x+"/"+y+"/"+z;
+                byte[] sendData = sentence.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, serverPort);
+                try
+                {
+                    clientSocket.send(sendPacket);
+                    Log.e("Sucess send", sentence);
+                }
+                catch (IOException e)
+                {
+                    Log.e("Error send", e.getMessage());
+                }
             }
         }).start();
     }
@@ -153,16 +178,16 @@ public class Main
         SensorManager.getRotationMatrix(rotationMatrix, null, accelData, magnetData); //Получаем матрицу поворота
         SensorManager.getOrientation(rotationMatrix, OrientationData); //Получаем данные ориентации устройства в пространстве
 
-        if((xyView==null)||(xzView==null)||(zyView==null)){  //Без этого работать отказалось.
-            xyView = (TextView) findViewById(R.id.xyValue);
-            xzView = (TextView) findViewById(R.id.xzValue);
-            zyView = (TextView) findViewById(R.id.zyValue);
-        }
-
         //Выводим результат
-        xyView.setText(String.valueOf(Math.round(Math.toDegrees(OrientationData[0]))));
-        xzView.setText(String.valueOf(Math.round(Math.toDegrees(OrientationData[1]))));
-        zyView.setText(String.valueOf(Math.round(Math.toDegrees(OrientationData[2]))));
+        long x = Math.round(Math.toDegrees(OrientationData[0]));
+        long y = Math.round(Math.toDegrees(OrientationData[1]));
+        long z = Math.round(Math.toDegrees(OrientationData[2]));
+        xyView.setText(String.valueOf(x));
+        xzView.setText(String.valueOf(y));
+        zyView.setText(String.valueOf(z));
+
+        //
+        sendOrientationData(x/2, y/2, z/2);
     }
 
     @Override
