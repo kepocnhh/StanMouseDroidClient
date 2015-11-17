@@ -71,6 +71,11 @@
             android:text="0" />
 
     </LinearLayout>
+    <Button
+        android:id="@+id/testButton"
+        android:text="test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
     <FrameLayout
         android:id="@+id/main_frame"
         android:layout_width="match_parent"

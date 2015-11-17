@@ -5,7 +5,19 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 import stan.mouse.R;
 
@@ -17,9 +29,15 @@ public class Main
     private TextView xyView;
     private TextView xzView;
     private TextView zyView;
+    Button testButton;
 
     //_______________FIELDS
     private SensorManager msensorManager; //Менеджер сенсоров аппрата
+//    BufferedReader inFromUser;
+    DatagramSocket clientSocket;
+    InetAddress IPAddress;
+    int serverPort = 9876;
+    String serverAddress = "192.168.1.161";
 
     private float[] rotationMatrix;     //Матрица поворота
     private float[] accelData;           //Данные с акселерометра
@@ -44,6 +62,50 @@ public class Main
         xyView = (TextView) findViewById(R.id.xyValue);
         xzView = (TextView) findViewById(R.id.xzValue);
         zyView = (TextView) findViewById(R.id.zyValue);
+        testButton = (Button) findViewById(R.id.testButton);
+        testButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                try
+                {
+                    test();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void test()
+            throws IOException
+    {
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                String sentence = "hello from droid";
+                byte[] sendData = sentence.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, serverPort);
+                byte[] receiveData = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                try
+                {
+                    clientSocket.send(sendPacket);
+                    clientSocket.receive(receivePacket);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                String modifiedSentence = new String(receivePacket.getData());
+                Log.e("FROM SERVER", modifiedSentence);
+            }
+        }).start();
     }
 
     @Override
@@ -54,6 +116,21 @@ public class Main
         accelData = new float[3];
         magnetData = new float[3];
         OrientationData = new float[3];
+        //
+//        inFromUser = new BufferedReader(new InputStreamReader(System.in));
+        try
+        {
+            clientSocket = new DatagramSocket();
+            IPAddress = InetAddress.getByName(serverAddress);
+        }
+        catch (SocketException e)
+        {
+            e.printStackTrace();
+        }
+        catch (UnknownHostException e)
+        {
+            e.printStackTrace();
+        }
     }
     @Override
     protected void onResume()
