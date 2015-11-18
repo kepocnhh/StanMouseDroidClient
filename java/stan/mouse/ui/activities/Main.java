@@ -110,7 +110,7 @@ public class Main
         }).start();
     }
 
-    private void sendOrientationData(final long x, final long y, final long z)
+    private void sendOrientationData(final String x, final String y, final String z)
     {
         new Thread(new Runnable()
         {
@@ -123,7 +123,7 @@ public class Main
                 try
                 {
                     clientSocket.send(sendPacket);
-                    Log.e("Sucess send", sentence);
+                    Log.e("Sucess send", x+"\t"+y+"\t"+z);
                 }
                 catch (IOException e)
                 {
@@ -179,15 +179,20 @@ public class Main
         SensorManager.getOrientation(rotationMatrix, OrientationData); //Получаем данные ориентации устройства в пространстве
 
         //Выводим результат
-        long x = Math.round(Math.toDegrees(OrientationData[0]));
-        long y = Math.round(Math.toDegrees(OrientationData[1]));
-        long z = Math.round(Math.toDegrees(OrientationData[2]));
+//        long x = Math.round(Math.toDegrees(OrientationData[0]));
+//        long y = Math.round(Math.toDegrees(OrientationData[1]));
+//        long z = Math.round(Math.toDegrees(OrientationData[2]));
+        int x = (int)(OrientationData[0] * 1000);
+        int y = (int)(OrientationData[1] * 1000);
+        int z = (int)(OrientationData[2] * 1000);
         xyView.setText(String.valueOf(x));
         xzView.setText(String.valueOf(y));
         zyView.setText(String.valueOf(z));
 
         //
-        sendOrientationData(x/2, y/2, z/2);
+//        sendOrientationData(x/2, y/2, z/2);
+//        sendOrientationData(OrientationData[0]+"", OrientationData[1]+"", OrientationData[2]+"");
+        sendOrientationData(x+"", y+"", z+"");
     }
 
     @Override
