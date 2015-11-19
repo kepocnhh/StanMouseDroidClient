@@ -18,6 +18,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import stan.mouse.R;
 
@@ -41,6 +43,8 @@ public class Main
 //            "192.168.1.161"
             "10.0.1.16"
             ;
+    List<Integer> xTemp;
+    int tempListSize = 25;
 
     private float[] rotationMatrix;     //Матрица поворота
     private float[] accelData;           //Данные с акселерометра
@@ -156,6 +160,12 @@ public class Main
         {
             e.printStackTrace();
         }
+
+        xTemp = new ArrayList<>();
+        for(int i=0; i<tempListSize-1; i++)
+        {
+            xTemp.add(0);
+        }
     }
     @Override
     protected void onResume()
@@ -192,7 +202,17 @@ public class Main
         //
 //        sendOrientationData(x/2, y/2, z/2);
 //        sendOrientationData(OrientationData[0]+"", OrientationData[1]+"", OrientationData[2]+"");
-        sendOrientationData(x+"", y+"", z+"");
+
+        int xForMouse = x;
+        xTemp.add(x);
+        for(int i=0; i<xTemp.size(); i++)
+        {
+            xForMouse += xTemp.get(i);
+        }
+        xTemp.remove(0);
+        xForMouse /= tempListSize;
+        sendOrientationData(xForMouse+"", y+"", z+"");
+//        sendOrientationData(x+"", y+"", z+"");
     }
 
     @Override
